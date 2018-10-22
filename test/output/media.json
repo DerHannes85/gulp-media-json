@@ -1,0 +1,50 @@
+{
+	"audio": {
+		"organfinale-mp3": {
+			"src": "audio/organfinale.mp3",
+			"ext": "mp3",
+			"mime": "audio/mpeg",
+			"type": "audio"
+		},
+		"organfinale-wav": {
+			"src": "audio/organfinale.wav",
+			"ext": "wav",
+			"mime": "audio/wave",
+			"type": "audio"
+		}
+	},
+	"image": {
+		"sample-image-jpg": {
+			"src": "image/sample-image.jpg",
+			"ext": "jpg",
+			"mime": "image/jpeg",
+			"type": "image",
+			"w": 1792,
+			"h": 1792,
+			"ratio": "1/1",
+			"ratioValue": 1
+		},
+		"test-gif": {
+			"src": "image/test.gif",
+			"ext": "gif",
+			"mime": "image/gif",
+			"type": "image",
+			"w": 492,
+			"h": 229,
+			"ratio": "492/229",
+			"ratioValue": 2.148471615720524
+		}
+	},
+	"video": {
+		"test-mp4": {
+			"src": "video/test.mp4",
+			"ext": "mp4",
+			"mime": "video/mp4",
+			"type": "video"
+		}
+	},
+	"empty": {
+		"1/1": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4AWMAAQAABQABNtCI3QAAAABJRU5ErkJggg==",
+		"492/229": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAewAAADlCAYAAACRUsQcAAABzElEQVR4Ae3BAQ0AAADCIPunfg43YAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAlwDhrwABJaVpigAAAABJRU5ErkJggg=="
+	}
+}

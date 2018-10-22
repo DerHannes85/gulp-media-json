@@ -172,7 +172,7 @@ module.exports = function(settings) {
             return;
         }
 
-        if (options.emptyBase64 && typeof options.emptyBase64Namespace !== 'string') {
+        if (options.emptyBase64 && typeof options.emptyBase64Namespace === 'string') {
             namespace(returnData, options.emptyBase64Namespace, base64Data);
         }
 

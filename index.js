@@ -137,8 +137,8 @@ module.exports = function(settings) {
                     if (base64DataElement !== false) {
                         if (typeof options.emptyBase64Namespace !== 'string') {
                             _set(returnData, dataNamespace + '.empty', base64DataElement);
-                            cb();
                         }
+                        cb();
                     } else {
                         new Jimp(image.bitmap.width / currentGcd, image.bitmap.height / currentGcd, (err, emptyImage) => {
                             if (err === null) {

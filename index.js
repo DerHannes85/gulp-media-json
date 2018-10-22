@@ -19,7 +19,7 @@ const Jimp = require('jimp');
 const PLUGIN_NAME = 'gulp-media-json';
 
 const gcd = function(a, b) {
-    if ( ! b) {
+    if (!b) {
         return a;
     }
 
@@ -69,15 +69,18 @@ module.exports = function(settings) {
             // Defaults
             escapeNamespace: escapeNamespace,
             fileName: 'media.json',
+            emptyBase64: true,
+            emptyBase64Namespace: null,
             startObj: {},
             endObj: null,
             exportModule: false,
             jsonReplacer: null,
             jsonSpace: '\t',
-            basePath: __dirname + '\\'
+            basePath: ''
         },
         lastFile,
-        returnData;
+        returnData,
+        base64Data;
 
 
     if (typeof settings === 'object') {
@@ -88,6 +91,10 @@ module.exports = function(settings) {
         returnData = options.startObj;
     } else {
         returnData = {};
+    }
+
+    if (options.emptyBase64) {
+        base64Data = {};
     }
 
     function processFile(file, enc, cb) {
@@ -108,7 +115,7 @@ module.exports = function(settings) {
         lastFile = file;
         currentVinyl = new Vinyl(file);
 
-        dataNamespace = currentVinyl.dirname.replace(options.basePath, '').replace(/[\\\/]/g, '.').replace(/^\./g, '');
+        dataNamespace = currentVinyl.dirname.replace(currentVinyl.cwd + '\\' + options.basePath, '').replace(/[\\\/]/g, '.').replace(/^\./g, '');
         dataNamespace = options.escapeNamespace(dataNamespace + '.' + currentVinyl.stem);
 
         namespace(returnData, dataNamespace, {
@@ -117,24 +124,40 @@ module.exports = function(settings) {
 
         Jimp.read(file.path)
             .then((image) => {
-                let currentGcd = gcd(image.bitmap.width, image.bitmap.height);
+                let currentGcd = gcd(image.bitmap.width, image.bitmap.height),
+                    ratioName = (image.bitmap.width / currentGcd) + '/' + (image.bitmap.height / currentGcd),
+                    base64DataElement = _get(base64Data, ratioName, false);
 
                 _set(returnData, dataNamespace + '.width', image.bitmap.width);
                 _set(returnData, dataNamespace + '.height', image.bitmap.height);
-                _set(returnData, dataNamespace + '.ratioName', (image.bitmap.width / currentGcd) + '/' + (image.bitmap.height / currentGcd));
+                _set(returnData, dataNamespace + '.ratioName', ratioName);
                 _set(returnData, dataNamespace + '.ratioValue', image.bitmap.width / image.bitmap.height);
 
-                new Jimp(image.bitmap.width / currentGcd, image.bitmap.height / currentGcd, (err, emptyImage) => {
-                    if (err === null) {
-                        emptyImage.getBase64Async(Jimp.MIME_PNG)
-                            .then((data) => {
-                                _set(returnData, dataNamespace + '.empty', data);
-                                cb();
-                            });
+                if (options.emptyBase64) {
+                    if (base64DataElement !== false) {
+                        if (typeof options.emptyBase64Namespace !== 'string') {
+                            _set(returnData, dataNamespace + '.empty', base64DataElement);
+                        }
                     } else {
-                        cb();
+                        new Jimp(image.bitmap.width / currentGcd, image.bitmap.height / currentGcd, (err, emptyImage) => {
+                            if (err === null) {
+                                emptyImage.getBase64Async(Jimp.MIME_PNG)
+                                    .then((newBase64DataElement) => {
+                                        // cache base64
+                                        _set(base64Data, ratioName, newBase64DataElement);
+                                        if (typeof options.emptyBase64Namespace !== 'string') {
+                                            _set(returnData, dataNamespace + '.empty', newBase64DataElement);
+                                        }
+                                        cb();
+                                    });
+                            } else {
+                                cb();
+                            }
+                        });
                     }
-                });
+                } else {
+                    cb();
+                }
             })
             .catch((err) => {
                 this.emit('error', new PluginError(PLUGIN_NAME, 'Error while processing image ' + file.pathname));
@@ -148,8 +171,12 @@ module.exports = function(settings) {
             return;
         }
 
+        if (options.emptyBase64 && typeof options.emptyBase64Namespace !== 'string') {
+            namespace(returnData, options.emptyBase64Namespace, base64Data);
+        }
+
         if (options.endObj) {
-            returnData = _.assign(returnData, options.endObj, options);
+            returnData = _.assign(returnData, options.endObj);
         }
 
         let contents = JSON.stringify(returnData, options.jsonReplacer, options.jsonSpace);
@@ -166,7 +193,7 @@ module.exports = function(settings) {
         });
 
         this.push(output);
-        
+
         cb();
     }
 

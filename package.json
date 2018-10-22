@@ -1,6 +1,6 @@
 {
   "name": "gulp-media-json",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Creates a json file with an information object of a media asset folder.",
   "main": "index.js",
   "directories": {

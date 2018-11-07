@@ -121,7 +121,8 @@ module.exports = function (settings) {
         if (file.isStream())
         {
             this.emit('error', new PluginError(PLUGIN_NAME, 'Streaming not supported!'));
-            return cb();
+            cb();
+            return;
         }
 
         lastFile = file;
@@ -173,37 +174,46 @@ module.exports = function (settings) {
                                                     if (typeof options.emptyImageBase64Namespace !== 'string') {
                                                         _set(returnData, dataNamespace + '.empty', newBase64DataElement);
                                                     }
-                                                    return cb();
+                                                    cb();
+                                                })
+                                                .catch((err) => {
+                                                    this.emit('warning', new PluginError(PLUGIN_NAME, 'Error while generating base64 for ' + file.path + ': ' + err.message));
+                                                    cb();
                                                 });
                                         } else {
-                                            return cb();
+                                            cb();
                                         }
                                     });
                                 }
                             } else {
-                                return cb();
+                                cb();
                             }
                         })
                         .catch((err) => {
                             _set(returnData, dataNamespace, undefined);
                             this.emit('warning', new PluginError(PLUGIN_NAME, 'Error while processing image ' + file.path + ': ' + err.message));
-                            return cb();
+                            cb();
                         });
+                } else {
+                    cb();
                 }
 
-                return cb();
+                break;
 
             case (currentMimeType.match(/video/) !== null):
                 _set(returnData, dataNamespace + '.type', 'video');
-                return cb();
+                cb();
+                break;
 
             case (currentMimeType.match(/audio/) !== null):
                 _set(returnData, dataNamespace + '.type', 'audio');
-                return cb();
+                cb();
+                break;
 
             default:
                 _set(returnData, dataNamespace + '.type', 'unknown');
-                return cb();
+                cb();
+                break;
         }
     }
 

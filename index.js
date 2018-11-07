@@ -77,7 +77,8 @@ module.exports = function (settings) {
             // Defaults
             escapeNamespace: escapeNamespace,
             fileName: 'media.json',
-            emptyImageBase64: true,
+            getImageInfo: true,
+            emptyImageBase64: true, // only if getImageInfo is true
             emptyImageBase64Namespace: null,
             ratioValue: false,
             startObj: {},
@@ -117,12 +118,6 @@ module.exports = function (settings) {
             currentMimeType,
             currentExtName;
 
-        if (file.isNull())
-        {
-            cb();
-            return;
-        }
-
         if (file.isStream())
         {
             this.emit('error', new PluginError(PLUGIN_NAME, 'Streaming not supported!'));
@@ -149,59 +144,54 @@ module.exports = function (settings) {
             case (currentMimeType.match(/image/) !== null):
                 _set(returnData, dataNamespace + '.type', 'image');
 
-                Jimp.read(file.path)
-                    .then((image) => {
-                        let currentGcd = gcd(image.bitmap.width, image.bitmap.height),
-                            ratioName = (image.bitmap.width / currentGcd) + '/' + (image.bitmap.height / currentGcd),
-                            base64DataElement = _get(base64Data, ratioName, false);
+                if(options.getImageInfo) {
+                    Jimp.read(file.path)
+                        .then((image) => {
+                            let currentGcd = gcd(image.bitmap.width, image.bitmap.height),
+                                ratioName = (image.bitmap.width / currentGcd) + '/' + (image.bitmap.height / currentGcd),
+                                base64DataElement = _get(base64Data, ratioName, false);
 
-                        _set(returnData, dataNamespace + '.w', image.bitmap.width);
-                        _set(returnData, dataNamespace + '.h', image.bitmap.height);
-                        _set(returnData, dataNamespace + '.ratio', ratioName);
-                        if (options.ratioValue === true)
-                        {
-                            _set(returnData, dataNamespace + '.ratioValue', image.bitmap.width / image.bitmap.height);
-                        }
-
-                        if (options.emptyImageBase64)
-                        {
-                            if (base64DataElement !== false)
-                            {
-                                if (typeof options.emptyImageBase64Namespace !== 'string')
-                                {
-                                    _set(returnData, dataNamespace + '.empty', base64DataElement);
-                                }
-                                cb();
-                            } else
-                            {
-                                new Jimp(image.bitmap.width / currentGcd, image.bitmap.height / currentGcd, (err, emptyImage) => {
-                                    if (err === null)
-                                    {
-                                        emptyImage.getBase64Async(Jimp.MIME_PNG)
-                                            .then((newBase64DataElement) => {
-                                                // cache base64
-                                                _set(base64Data, ratioName, newBase64DataElement);
-                                                if (typeof options.emptyImageBase64Namespace !== 'string')
-                                                {
-                                                    _set(returnData, dataNamespace + '.empty', newBase64DataElement);
-                                                }
-                                                cb();
-                                            });
-                                    } else
-                                    {
-                                        cb();
-                                    }
-                                });
+                            _set(returnData, dataNamespace + '.w', image.bitmap.width);
+                            _set(returnData, dataNamespace + '.h', image.bitmap.height);
+                            _set(returnData, dataNamespace + '.ratio', ratioName);
+                            if (options.ratioValue === true) {
+                                _set(returnData, dataNamespace + '.ratioValue', image.bitmap.width / image.bitmap.height);
                             }
-                        } else
-                        {
+
+                            if (options.emptyImageBase64) {
+                                if (base64DataElement !== false) {
+                                    if (typeof options.emptyImageBase64Namespace !== 'string') {
+                                        _set(returnData, dataNamespace + '.empty', base64DataElement);
+                                    }
+                                    cb();
+                                } else {
+                                    new Jimp(image.bitmap.width / currentGcd, image.bitmap.height / currentGcd, (err, emptyImage) => {
+                                        if (err === null) {
+                                            emptyImage.getBase64Async(Jimp.MIME_PNG)
+                                                .then((newBase64DataElement) => {
+                                                    // cache base64
+                                                    _set(base64Data, ratioName, newBase64DataElement);
+                                                    if (typeof options.emptyImageBase64Namespace !== 'string') {
+                                                        _set(returnData, dataNamespace + '.empty', newBase64DataElement);
+                                                    }
+                                                    cb();
+                                                });
+                                        } else {
+                                            cb();
+                                        }
+                                    });
+                                }
+                            } else {
+                                cb();
+                            }
+                        })
+                        .catch(() => {
+                            this.emit('error', new PluginError(PLUGIN_NAME, 'Error while processing image ' + file.pathname));
                             cb();
-                        }
-                    })
-                    .catch(() => {
-                        this.emit('error', new PluginError(PLUGIN_NAME, 'Error while processing image ' + file.pathname));
-                        cb();
-                    });
+                        });
+                } else {
+                    cb();
+                }
 
                 break;
 

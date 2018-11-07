@@ -121,8 +121,7 @@ module.exports = function (settings) {
         if (file.isStream())
         {
             this.emit('error', new PluginError(PLUGIN_NAME, 'Streaming not supported!'));
-            cb();
-            return;
+            return cb();
         }
 
         lastFile = file;
@@ -174,42 +173,37 @@ module.exports = function (settings) {
                                                     if (typeof options.emptyImageBase64Namespace !== 'string') {
                                                         _set(returnData, dataNamespace + '.empty', newBase64DataElement);
                                                     }
-                                                    cb();
+                                                    return cb();
                                                 });
                                         } else {
-                                            cb();
+                                            return cb();
                                         }
                                     });
                                 }
                             } else {
-                                cb();
+                                return cb();
                             }
                         })
                         .catch((err) => {
                             _set(returnData, dataNamespace, undefined);
                             this.emit('warning', new PluginError(PLUGIN_NAME, 'Error while processing image ' + file.path + ': ' + err.message));
-                            cb();
+                            return cb();
                         });
-                } else {
-                    cb();
                 }
 
-                break;
+                return cb();
 
             case (currentMimeType.match(/video/) !== null):
                 _set(returnData, dataNamespace + '.type', 'video');
-                cb();
-                break;
+                return cb();
 
             case (currentMimeType.match(/audio/) !== null):
                 _set(returnData, dataNamespace + '.type', 'audio');
-                cb();
-                break;
+                return cb();
 
             default:
                 _set(returnData, dataNamespace + '.type', 'unknown');
-                cb();
-                break;
+                return cb();
         }
     }
 

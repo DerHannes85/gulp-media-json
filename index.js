@@ -185,8 +185,9 @@ module.exports = function (settings) {
                                 cb();
                             }
                         })
-                        .catch(() => {
-                            this.emit('error', new PluginError(PLUGIN_NAME, 'Error while processing image ' + file.path));
+                        .catch((err) => {
+                            _set(returnData, dataNamespace, undefined);
+                            this.emit('warning', new PluginError(PLUGIN_NAME, 'Error while processing image ' + file.path + ': ' + err.message));
                             cb();
                         });
                 } else {

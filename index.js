@@ -186,7 +186,7 @@ module.exports = function (settings) {
                             }
                         })
                         .catch(() => {
-                            this.emit('error', new PluginError(PLUGIN_NAME, 'Error while processing image ' + file.pathname));
+                            this.emit('error', new PluginError(PLUGIN_NAME, 'Error while processing image ' + file.path));
                             cb();
                         });
                 } else {

@@ -178,7 +178,6 @@ module.exports = function(settings) {
                                     if (typeof options.emptyImageBase64Namespace !== 'string') {
                                         _set(returnData, dataNamespace + '.empty', base64DataElement);
                                     }
-                                    cb();
                                 } else {
                                     new Jimp(image.bitmap.width / currentGcd, image.bitmap.height / currentGcd, (err, emptyImage) => {
                                         if (err === null) {
@@ -189,25 +188,26 @@ module.exports = function(settings) {
                                                     if (typeof options.emptyImageBase64Namespace !== 'string') {
                                                         _set(returnData, dataNamespace + '.empty', newBase64DataElement);
                                                     }
-                                                    cb();
                                                 })
                                                 .catch((err) => {
                                                     this.emit('warning', new PluginError(PLUGIN_NAME, 'Error while generating base64 for ' + file.path + ': ' + err.message));
+                                                })
+                                                .then(() => {
                                                     cb();
                                                 });
-                                        } else {
-                                            cb();
                                         }
                                     });
                                 }
-                            } else {
-                                cb();
                             }
                         })
                         .catch((err) => {
                             _set(returnData, dataNamespace, undefined);
                             this.emit('warning', new PluginError(PLUGIN_NAME, 'Error while processing image ' + file.path + ': ' + err.message));
-                            cb();
+                        })
+                        .then(() => {
+                            if (options.emptyImageBase64 !== true) {
+                                cb();
+                            }
                         });
                 } else {
                     cb();

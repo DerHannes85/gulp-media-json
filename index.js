@@ -178,6 +178,7 @@ module.exports = function(settings) {
                                     if (typeof options.emptyImageBase64Namespace !== 'string') {
                                         _set(returnData, dataNamespace + '.empty', base64DataElement);
                                     }
+                                    cb();
                                 } else {
                                     new Jimp(image.bitmap.width / currentGcd, image.bitmap.height / currentGcd, (err, emptyImage) => {
                                         if (err === null) {
@@ -198,6 +199,8 @@ module.exports = function(settings) {
                                         }
                                     });
                                 }
+                            } else {
+                                cb();
                             }
                         })
                         .catch((err) => {

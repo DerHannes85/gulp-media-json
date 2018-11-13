@@ -71,9 +71,19 @@ module.exports = function(settings) {
             escapeNamespace: escapeNamespace,
             fileName: 'media.json',
             getImageInfo: true,
+            imageProps: {
+                "src": true,
+                "ext": true,
+                "mime": true,
+                "type": true,
+                "w": true,
+                "h": true,
+                "ratio": true,
+                "ratioValue": false
+            },
+            imageRatioValueTrim: false,
             emptyImageBase64: true, // only if getImageInfo is true
             emptyImageBase64Namespace: null,
-            ratioValue: false,
             startObj: {},
             endObj: null,
             exportModule: false,
@@ -120,28 +130,47 @@ module.exports = function(settings) {
         dataNamespace = currentVinyl.dirname.replace(currentVinyl.cwd + '\\' + options.basePath, '').replace(/[\\\/]/g, '.').replace(/^\./g, '');
         dataNamespace = options.escapeNamespace(dataNamespace + '.' + currentVinyl.stem, currentExtName);
 
-        namespace(returnData, dataNamespace, {
-            src: currentVinyl.dirname.replace(currentVinyl.cwd + '\\' + options.basePath, '').replace(/[\\]/g, '/') + '/' + currentVinyl.basename,
-            ext: currentExtName,
-            mime: currentMimeType
-        });
+        namespace(returnData, dataNamespace, {});
+
+        if (options.imageProps.src === true) {
+            _set(returnData, dataNamespace + '.src', currentVinyl.dirname.replace(currentVinyl.cwd + '\\' + options.basePath, '').replace(/[\\]/g, '/') + '/' + currentVinyl.basename);
+        }
+        if (options.imageProps.ext === true) {
+            _set(returnData, dataNamespace + '.ext', currentExtName);
+        }
+        if (options.imageProps.mime === true) {
+            _set(returnData, dataNamespace + '.mime', currentMimeType);
+        }
 
         switch (true) {
             case (currentMimeType.match(/image/) !== null):
-                _set(returnData, dataNamespace + '.type', 'image');
+                if (options.imageProps.type === true) {
+                    _set(returnData, dataNamespace + '.type', 'image');
+                }
 
                 if (options.getImageInfo) {
                     Jimp.read(file.path)
                         .then((image) => {
-                            let currentGcd = gcd(image.bitmap.width, image.bitmap.height),
+                            let ratioValue = image.bitmap.width / image.bitmap.height,
+                                currentGcd = gcd(image.bitmap.width, image.bitmap.height),
                                 ratioName = (image.bitmap.width / currentGcd) + '/' + (image.bitmap.height / currentGcd),
                                 base64DataElement = _get(base64Data, ratioName, false);
 
-                            _set(returnData, dataNamespace + '.w', image.bitmap.width);
-                            _set(returnData, dataNamespace + '.h', image.bitmap.height);
-                            _set(returnData, dataNamespace + '.ratio', ratioName);
-                            if (options.ratioValue === true) {
-                                _set(returnData, dataNamespace + '.ratioValue', image.bitmap.width / image.bitmap.height);
+                            if (options.imageProps.w === true) {
+                                _set(returnData, dataNamespace + '.w', image.bitmap.width);
+                            }
+                            if (options.imageProps.h === true) {
+                                _set(returnData, dataNamespace + '.h', image.bitmap.height);
+                            }
+                            if (options.imageProps.ratio === true) {
+                                _set(returnData, dataNamespace + '.ratio', ratioName);
+                            }
+                            if (options.imageProps.ratioValue === true) {
+                                if (Number.isInteger(options.imageRatioValueTrim) && options.imageRatioValueTrim >= 0) {
+                                    _set(returnData, dataNamespace + '.ratioValue', parseFloat(ratioValue.toFixed(options.imageRatioValueTrim)));
+                                } else {
+                                    _set(returnData, dataNamespace + '.ratioValue', ratioValue);
+                                }
                             }
 
                             if (options.emptyImageBase64) {

@@ -19,36 +19,32 @@ const Jimp = require('jimp');
 
 const PLUGIN_NAME = 'gulp-media-json';
 
-const gcd = function (a, b) {
-    if (!b)
-    {
+const gcd = function(a, b) {
+    if (!b) {
         return a;
     }
 
     return gcd(b, a % b);
 };
 
-const namespace = function (obj, path, value) {
+const namespace = function(obj, path, value) {
     let tempValue;
 
-    if (typeof path === 'undefined')
-    {
+    if (typeof path === 'undefined') {
         path = obj;
         obj = this;
     }
 
     tempValue = _get(obj, path, undefined);
-    if (typeof tempValue === 'undefined')
-    {
+    if (typeof tempValue === 'undefined') {
         _set(obj, path, value);
-    } else
-    {
+    } else {
         value = tempValue;
     }
     return value;
 };
 
-const escapeNamespace = function (s, ext) {
+const escapeNamespace = function(s, ext) {
     let temp,
         i;
 
@@ -56,14 +52,11 @@ const escapeNamespace = function (s, ext) {
 
     temp = s.split(/\./);
     s = "";
-    for (i = 0; i < temp.length; i++)
-    {
-        if (i !== 0)
-        {
+    for (i = 0; i < temp.length; i++) {
+        if (i !== 0) {
             s += '.';
         }
-        if (temp[i][0].match(/[0-9]/) !== null)
-        {
+        if (temp[i][0].match(/[0-9]/) !== null) {
             s += '_';
         }
         s += _camelCase(temp[i]);
@@ -72,7 +65,7 @@ const escapeNamespace = function (s, ext) {
     return s;
 };
 
-module.exports = function (settings) {
+module.exports = function(settings) {
     let options = {
             // Defaults
             escapeNamespace: escapeNamespace,
@@ -93,33 +86,27 @@ module.exports = function (settings) {
         base64Data;
 
 
-    if (typeof settings === 'object')
-    {
+    if (typeof settings === 'object') {
         options = Object.assign(options, settings);
     }
 
-    if (typeof options.startObj === 'object')
-    {
+    if (typeof options.startObj === 'object') {
         returnData = options.startObj;
-    } else
-    {
+    } else {
         returnData = {};
     }
 
-    if (options.emptyImageBase64)
-    {
+    if (options.emptyImageBase64) {
         base64Data = {};
     }
 
-    function processFile(file, enc, cb)
-    {
+    function processFile(file, enc, cb) {
         let dataNamespace,
             currentVinyl,
             currentMimeType,
             currentExtName;
 
-        if (file.isStream())
-        {
+        if (file.isStream()) {
             this.emit('error', new PluginError(PLUGIN_NAME, 'Streaming not supported!'));
             cb();
             return;
@@ -139,12 +126,11 @@ module.exports = function (settings) {
             mime: currentMimeType
         });
 
-        switch (true)
-        {
+        switch (true) {
             case (currentMimeType.match(/image/) !== null):
                 _set(returnData, dataNamespace + '.type', 'image');
 
-                if(options.getImageInfo) {
+                if (options.getImageInfo) {
                     Jimp.read(file.path)
                         .then((image) => {
                             let currentGcd = gcd(image.bitmap.width, image.bitmap.height),
@@ -217,31 +203,25 @@ module.exports = function (settings) {
         }
     }
 
-    function endStream(cb)
-    {
-        if (!lastFile)
-        {
+    function endStream(cb) {
+        if (!lastFile) {
             cb();
             return;
         }
 
-        if (options.emptyImageBase64 && typeof options.emptyImageBase64Namespace === 'string')
-        {
+        if (options.emptyImageBase64 && typeof options.emptyImageBase64Namespace === 'string') {
             namespace(returnData, options.emptyImageBase64Namespace, base64Data);
         }
 
-        if (options.endObj)
-        {
+        if (options.endObj) {
             returnData = _.assign(returnData, options.endObj);
         }
 
         let contents = JSON.stringify(returnData, options.jsonReplacer, options.jsonSpace);
 
-        if (options.exportModule === true)
-        {
+        if (options.exportModule === true) {
             contents = `module.exports = ${contents};`;
-        } else if (options.exportModule)
-        {
+        } else if (options.exportModule) {
             contents = `${options.exportModule} = ${contents};`;
         }
 
